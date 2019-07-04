@@ -1,0 +1,9 @@
+﻿Super-resolution for medical imaging 
+
+
+Will implement the sparse weight single image super-resolution algorithm for medical imaging
+https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6748079
+
+
+Group members - Chinmay Talegaonkar 15D070046
+* Pranay Agrawal 150050026

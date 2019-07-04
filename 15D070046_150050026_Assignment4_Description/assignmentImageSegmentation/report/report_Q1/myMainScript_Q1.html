@@ -1,0 +1,335 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>myMainScript</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-03-22"><meta name="DC.source" content="myMainScript.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Membership initialization</a></li></ul></div><pre class="codeinput">clear;
+tic;
+
+load(<span class="string">"../data/assignmentSegmentBrain.mat"</span>)
+img = imageData.*imageMask;
+
+[row, col] = find(imageMask);
+rect = [min(col), min(row), max(col) - min(col), max(row) - min(row)];
+img = imcrop(img, rect);
+imageMask = imcrop(imageMask, rect);
+
+K = 3;
+
+[m,n] = size(img);
+</pre><h2 id="2">Membership initialization</h2><p> The initalization method used is kmeans.
+This is a good initalization as it is widely used for
+image segmentation.The value of class means is
+the value of means over the segments thus obtained by kmeans
+initalization. </p><pre class="codeinput">[labels, initial_means] = kmeans(img(:),4);
+labels = reshape(labels, [m,n]);
+
+<span class="comment">% interchanging labels to make label corresponding to (1,1) 4</span>
+l1 = labels(1,1);
+l2 = (labels == 4);
+labels(labels == l1) = 4;
+labels(l2) = l1;
+
+u = zeros(m,n,K);
+means = zeros(1,K);
+<span class="keyword">for</span> k = 1:K
+    u(:,:,k) = (labels == (k));
+    means(k) = mean(img(labels == k));
+<span class="keyword">end</span>
+
+figure;
+subplot(131), imshow(u(:,:,1)); title(<span class="string">'class 1'</span>);
+subplot(132), imshow(u(:,:,2)); title(<span class="string">'class 2'</span>);
+subplot(133), imshow(u(:,:,3)); title(<span class="string">'class 3'</span>);
+suptitle(<span class="string">'Initial membership'</span>);
+
+fprintf(<span class="string">"Initial class means - %f, %f and %f\n"</span>, means(1), means(2), means(3));
+
+q = 2;
+fprintf(<span class="string">'q = %d\n'</span>,q);
+neighbour_mask = fspecial(<span class="string">'gaussian'</span>, 12, 5);
+fprintf(<span class="string">'neighborhood mask is 12*12 gaussian with sigma = 5\n'</span>);
+figure;
+imshow(neighbour_mask, [])
+suptitle(<span class="string">'Neighbourhood mask'</span>);
+
+bias = 0.5*ones(m,n);
+d = zeros(m,n,K);
+obj_fn_vals = [];
+
+<span class="keyword">for</span> iter = 1:40
+	convoluted_bias = conv2(bias, neighbour_mask, <span class="string">'same'</span>);
+	squared_convoluted_bias = conv2(bias.^2, neighbour_mask, <span class="string">'same'</span>);
+
+	<span class="comment">% Solving for optimal membership</span>
+	<span class="keyword">for</span> k = 1:K
+		d(:,:,k) = img.^2 - 2*means(k).*img.*convoluted_bias + (means(k).^2).*squared_convoluted_bias;
+	<span class="keyword">end</span>
+	u_unnormalized = (1./d).^(1/(q-1));
+	normalize_factor = nansum(u_unnormalized,3);
+	<span class="keyword">for</span> k = 1:K
+		u_temp = u_unnormalized(:,:,k)./normalize_factor;
+		u_temp(isnan(u_temp)) = 1.0;
+		u(:,:,k) = u_temp.*imageMask;
+	<span class="keyword">end</span>
+
+	<span class="comment">% Solving for optimal class means</span>
+	<span class="keyword">for</span> k = 1:K
+		means(k) = sum(sum((u(:,:,k).^q).*img.*convoluted_bias))/(sum(sum((u(:,:,k).^q).*squared_convoluted_bias)));
+    <span class="keyword">end</span>
+
+	<span class="comment">% Solving for optimal bias</span>
+	sum_bias_num = zeros(m,n);
+	sum_bias_denom = zeros(m,n);
+	<span class="keyword">for</span> k = 1:K
+		sum_bias_num = sum_bias_num + ((u(:,:,k).^q).*means(k));
+		sum_bias_denom = sum_bias_denom + ((u(:,:,k).^q).*(means(k)^2));
+	<span class="keyword">end</span>
+	bias_num = conv2(img.*sum_bias_num, neighbour_mask, <span class="string">'same'</span>);
+	bias_denom = conv2(sum_bias_denom, neighbour_mask, <span class="string">'same'</span>);
+	bias = bias_num./bias_denom;
+    bias(isnan(bias)) = 0.0;
+
+	<span class="comment">% Computing objective function value</span>
+	val = sum(sum(sum((u.^q).*d)));
+	obj_fn_vals = [obj_fn_vals val];
+
+<span class="keyword">end</span>
+
+fprintf(<span class="string">"Optimal class means - %f, %f and %f\n"</span>, means(1), means(2), means(3));
+
+figure;
+plot(obj_fn_vals)
+xlabel(<span class="string">'iteration'</span>);
+ylabel(<span class="string">'Objective function value'</span>)
+suptitle(<span class="string">'Objective function value vs iterations'</span>);
+
+bias_removed_img = zeros(m,n);
+<span class="keyword">for</span> k = 1:K
+    bias_removed_img = bias_removed_img + u(:,:,k)*means(k);
+<span class="keyword">end</span>
+residual_img = img-(bias_removed_img.*bias);
+
+[~,new_labels] = max(u,[],3);
+<span class="keyword">for</span> k = 1:K
+	u(:,:,k) = (new_labels == k).*imageMask;
+<span class="keyword">end</span>
+figure;
+subplot(131), imshow(u(:,:,1)); title(<span class="string">'class 1'</span>);
+subplot(132), imshow(u(:,:,2)); title(<span class="string">'class 2'</span>);
+subplot(133), imshow(u(:,:,3)); title(<span class="string">'class 3'</span>);
+suptitle(<span class="string">'Optimal membership'</span>);
+
+figure;
+subplot(221);imshow(img, []); title(<span class="string">'Original Corrupted Image'</span>);
+subplot(222);imshow(bias, []); title(<span class="string">'Optimal Bias field'</span>);
+subplot(223);imshow(bias_removed_img, []); title(<span class="string">'Bias Removed Image'</span>);
+subplot(224);imshow(residual_img, []); title(<span class="string">'Residual Image'</span>);
+suptitle(<span class="string">'FCM segmentation'</span>);
+
+
+toc;
+</pre><pre class="codeoutput">Warning: Failed to converge in 100 iterations. 
+Initial class means - 0.636656, 0.253725 and 0.457631
+q = 2
+neighborhood mask is 12*12 gaussian with sigma = 5
+Optimal class means - 1.041422, 0.452439 and 0.855645
+Elapsed time is 1.899636 seconds.
+</pre><img vspace="5" hspace="5" src="myMainScript_01.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_02.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_03.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_04.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_05.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clear;
+tic;
+
+load("../data/assignmentSegmentBrain.mat")
+img = imageData.*imageMask;
+
+[row, col] = find(imageMask);
+rect = [min(col), min(row), max(col) - min(col), max(row) - min(row)];
+img = imcrop(img, rect);
+imageMask = imcrop(imageMask, rect);
+
+K = 3;
+
+[m,n] = size(img);
+
+%% Membership initialization
+% <html> The initalization method used is kmeans. 
+% This is a good initalization as it is widely used for
+% image segmentation.The value of class means is
+% the value of means over the segments thus obtained by kmeans 
+% initalization. </html>
+[labels, initial_means] = kmeans(img(:),4);
+labels = reshape(labels, [m,n]);
+
+% interchanging labels to make label corresponding to (1,1) 4
+l1 = labels(1,1);
+l2 = (labels == 4);
+labels(labels == l1) = 4;
+labels(l2) = l1;
+
+u = zeros(m,n,K);
+means = zeros(1,K);
+for k = 1:K
+    u(:,:,k) = (labels == (k));
+    means(k) = mean(img(labels == k));
+end
+
+figure;
+subplot(131), imshow(u(:,:,1)); title('class 1');
+subplot(132), imshow(u(:,:,2)); title('class 2');
+subplot(133), imshow(u(:,:,3)); title('class 3');
+suptitle('Initial membership');
+
+fprintf("Initial class means - %f, %f and %f\n", means(1), means(2), means(3));
+
+q = 2;
+fprintf('q = %d\n',q);
+neighbour_mask = fspecial('gaussian', 12, 5); 
+fprintf('neighborhood mask is 12*12 gaussian with sigma = 5\n');
+figure;
+imshow(neighbour_mask, [])
+suptitle('Neighbourhood mask');
+
+bias = 0.5*ones(m,n);
+d = zeros(m,n,K);
+obj_fn_vals = [];
+
+for iter = 1:40
+	convoluted_bias = conv2(bias, neighbour_mask, 'same');
+	squared_convoluted_bias = conv2(bias.^2, neighbour_mask, 'same');
+
+	% Solving for optimal membership
+	for k = 1:K
+		d(:,:,k) = img.^2 - 2*means(k).*img.*convoluted_bias + (means(k).^2).*squared_convoluted_bias;
+	end
+	u_unnormalized = (1./d).^(1/(q-1));
+	normalize_factor = nansum(u_unnormalized,3);
+	for k = 1:K
+		u_temp = u_unnormalized(:,:,k)./normalize_factor;
+		u_temp(isnan(u_temp)) = 1.0;
+		u(:,:,k) = u_temp.*imageMask;
+	end
+	
+	% Solving for optimal class means
+	for k = 1:K
+		means(k) = sum(sum((u(:,:,k).^q).*img.*convoluted_bias))/(sum(sum((u(:,:,k).^q).*squared_convoluted_bias)));
+    end
+ 
+	% Solving for optimal bias
+	sum_bias_num = zeros(m,n);
+	sum_bias_denom = zeros(m,n);
+	for k = 1:K
+		sum_bias_num = sum_bias_num + ((u(:,:,k).^q).*means(k));
+		sum_bias_denom = sum_bias_denom + ((u(:,:,k).^q).*(means(k)^2));
+	end
+	bias_num = conv2(img.*sum_bias_num, neighbour_mask, 'same');
+	bias_denom = conv2(sum_bias_denom, neighbour_mask, 'same');
+	bias = bias_num./bias_denom;
+    bias(isnan(bias)) = 0.0;
+
+	% Computing objective function value
+	val = sum(sum(sum((u.^q).*d)));
+	obj_fn_vals = [obj_fn_vals val];
+
+end
+
+fprintf("Optimal class means - %f, %f and %f\n", means(1), means(2), means(3));
+
+figure;
+plot(obj_fn_vals)
+xlabel('iteration');
+ylabel('Objective function value')
+suptitle('Objective function value vs iterations');
+
+bias_removed_img = zeros(m,n);
+for k = 1:K
+    bias_removed_img = bias_removed_img + u(:,:,k)*means(k);
+end
+residual_img = img-(bias_removed_img.*bias);
+
+[~,new_labels] = max(u,[],3);
+for k = 1:K
+	u(:,:,k) = (new_labels == k).*imageMask;
+end
+figure;
+subplot(131), imshow(u(:,:,1)); title('class 1');
+subplot(132), imshow(u(:,:,2)); title('class 2');
+subplot(133), imshow(u(:,:,3)); title('class 3');
+suptitle('Optimal membership');
+
+figure;
+subplot(221);imshow(img, []); title('Original Corrupted Image');
+subplot(222);imshow(bias, []); title('Optimal Bias field');
+subplot(223);imshow(bias_removed_img, []); title('Bias Removed Image');
+subplot(224);imshow(residual_img, []); title('Residual Image');
+suptitle('FCM segmentation');
+
+
+toc;
+
+
+##### SOURCE END #####
+--></body></html>
